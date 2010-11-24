@@ -1,4 +1,1 @@
-make internal links relative
-  add .html
-  make root url 'index.html'
 make links to images from stylesheets relative

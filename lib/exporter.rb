@@ -4,9 +4,7 @@ require './spider'
 
 spider = Spider.new('http://becca.local')
 spider.crawl!
-
-spider.locate_static_assets!
-
+spider.format_pages!
 spider.store_the_internet!
 
 # puts spider.static_assets.inspect

@@ -20,10 +20,11 @@ class Spider
     crawl_domain(@domain)
   end
 
-  def locate_static_assets!
+  def format_pages!
     # Page is an Object with url => url, doc => Hpricot Object
     all_static_assets = []
     @visited_pages.each_pair do |url, page|
+      page.make_internal_links_relative!
       page_static_assets = page.make_assets_relative!
       all_static_assets += page_static_assets
     end
@@ -53,7 +54,6 @@ class Spider
   end
 
   def ensure_directory!(directory)
-    puts directory.inspect
     first_index = 0
     checking_directory = '/'
     while checking_directory != directory

@@ -2,9 +2,13 @@ require 'net/http'
 require 'uri'
 require 'open-uri'
 require 'hpricot'
+require './static_asset'
+
+require './url_utils'
 
 class Page < Struct.new(:url, :doc)
 
+  include UrlUtils
 
   def asset_attribute
     {
@@ -39,6 +43,10 @@ class Page < Struct.new(:url, :doc)
   def images
     doc.search(asset_selectors[2])
   end
+  
+  def links
+    doc.search("body a")
+  end
 
   # Makes all asset accessors relative, and returns the absolute paths of these assets
   def make_assets_relative!
@@ -54,16 +62,33 @@ class Page < Struct.new(:url, :doc)
     end
     return asset_paths
   end
+  
+  def make_internal_links_relative!
+    domain = get_domain(url)
+    links = doc.search("body a")
+    links.each do |link|
+      link_url = link['href']
+      # must be either absolute link or path to this domain
+      next if link_url.index(domain) != 0 and link_url.index('/') != 0
+      a = StaticAsset.new(link_url)
+      new_path = a.relative_path(url)
+      new_path = 'index' if new_path == ''
+      link['href'] = "#{new_path}.html"
+    end
+  end
+  
 end
 
-# url = 'http://becca.local'
+# url = 'http://becca.local/mechanism'
 # 
 # url_object = open(url)
 # 
 # doc = Hpricot(url_object)
 # 
 # p = Page.new(url, doc)
-
+# 
+# p.make_internal_links_relative
+# puts p.links.inspect
 
 #
 # puts p.static_assets
