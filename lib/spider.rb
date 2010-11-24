@@ -4,23 +4,65 @@ require 'open-uri'
 require 'hpricot'
 require './url_utils'
 require './page'
+require './static_asset'
+
 
 class Spider
   include UrlUtils
-  
-  attr_accessor :visited_pages, :domain
+
+  attr_accessor :visited_pages, :domain, :static_assets
   def initialize(domain)
     @domain = clean_root_domain(domain)
     @visited_pages = {}
-    @static_assets
   end
 
   def crawl!
     crawl_domain(@domain)
   end
-  
+
   def locate_static_assets!
-    @visited_pages.each
+    # Page is an Object with url => url, doc => Hpricot Object
+    all_static_assets = []
+    @visited_pages.each_pair do |url, page|
+      page_static_assets = page.make_assets_relative!
+      all_static_assets += page_static_assets
+    end
+    @static_assets = all_static_assets.uniq
+  end
+
+  def store_the_internet!(path='/Users/2collegebums/Apps/web_exporter/tmp/')
+    @visited_pages.each_pair do |url, page|
+      force_write("#{path}#{page.path}", page.html)
+    end
+    @static_assets.each do |url|
+      url_document = open_url("#{@domain}#{url}")
+      if url_document
+        document = parse_url(url_document)
+        force_write("#{path}#{url}", document.html)
+      end
+    end
+  end
+
+
+  def force_write(file_location, content=nil)
+    directory = File.dirname(file_location) + "/"
+    ensure_directory!(directory)
+    File.open(file_location, 'w+') do |f|
+      f.write(content)
+    end
+  end
+
+  def ensure_directory!(directory)
+    puts directory.inspect
+    first_index = 0
+    checking_directory = '/'
+    while checking_directory != directory
+      first_index = directory.index('/', first_index)
+      second_index = directory.index('/', first_index+1)
+      checking_directory = directory[0..second_index]
+      Dir.mkdir(checking_directory) unless Dir.exists?(checking_directory)
+      first_index = second_index
+    end
   end
 
   def crawl_domain(url, page_limit = 100)
@@ -72,7 +114,7 @@ class Spider
       new_url = x['href'].split('#')[0]
       unless new_url == nil
         if relative?(new_url)
-         new_url = make_absolute(current_url, new_url)
+          new_url = make_absolute(current_url, new_url)
         end
         urls_list.push(new_url)
       end
@@ -82,7 +124,3 @@ class Spider
 
   private :open_url, :update_url_if_redirected, :parse_url, :find_urls_on_page
 end
-
-
-    
-

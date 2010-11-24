@@ -7,6 +7,10 @@ spider.crawl!
 
 spider.locate_static_assets!
 
-spider.visited_pages.each do |url, page|
-  puts page.inspect
-end
+spider.store_the_internet!
+
+# puts spider.static_assets.inspect
+
+# spider.visited_pages.each do |url, page|
+#   puts page.inspect
+# end
