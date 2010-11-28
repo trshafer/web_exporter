@@ -11,4 +11,4 @@ I haven't figured out how I want peeps to use this yet.
 
 
 ##Special thanks
-[Skorks Ruby Crawler](http://www.skorks.com/2009/07/how-to-write-a-web-crawler-in-ruby/x)
+[Alan Skorkin](http://www.skorks.com/2009/07/how-to-write-a-web-crawler-in-ruby/)
