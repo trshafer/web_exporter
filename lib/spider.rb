@@ -5,6 +5,7 @@ require 'hpricot'
 require './url_utils'
 require './page'
 require './static_asset'
+require './css_fixer'
 
 
 class Spider
@@ -14,6 +15,7 @@ class Spider
   def initialize(domain)
     @domain = clean_root_domain(domain)
     @visited_pages = {}
+    @css_images = []
   end
 
   def crawl!
@@ -35,13 +37,30 @@ class Spider
     @visited_pages.each_pair do |url, page|
       force_write("#{path}#{page.path}", page.html)
     end
-    @static_assets.each do |url|
+    save_assets(@static_assets, path)
+    save_assets(@css_images, path)
+  end
+
+  def save_assets(assets, path)
+    assets.each do |url|
       url_document = open_url("#{@domain}#{url}")
       if url_document
         document = parse_url(url_document)
-        force_write("#{path}#{url}", document.html)
+        html = cleanup_static_asset("#{@domain}#{url}", document.html)
+        force_write("#{path}#{url}", html)
       end
     end
+  end
+
+  def cleanup_static_asset(full_url, html)
+    if full_url =~  /\.css\d*$/
+      css_fixer = CssFixer.new(full_url, html)
+      css_fixer.fix!
+      html = css_fixer.content
+      @css_images += css_fixer.linked_images
+      puts html
+    end
+    html
   end
 
 

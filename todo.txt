@@ -1,1 +1,1 @@
-make links to images from stylesheets relative
+verify with nested routes
