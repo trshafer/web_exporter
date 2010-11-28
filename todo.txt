@@ -1,1 +1,2 @@
 verify with nested routes
+check with js (I don't know how I can really do here, if peeps are dynamically changing the src of an image)
